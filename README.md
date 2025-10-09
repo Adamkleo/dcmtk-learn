@@ -350,3 +350,4 @@ BEYOND THIS POINT ARE THINGS I FOUND ONLINE, ADVANCED AND SPECIFIC, FOCUS ON THE
 - [ ] Logging and debugging set up
 - [ ] Merge-to-DCMTK mapping started
 
+Log into OFLOGS
