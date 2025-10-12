@@ -31,9 +31,9 @@ Notes for me:
 
 
 
-int main(int argc, char* argv[]) {
+int main() {
 
-	
+
 	std::cout << "Hello, DCMTK!" << std::endl;
 
 	DcmSCU client;
@@ -58,8 +58,8 @@ int main(int argc, char* argv[]) {
 	}
 
 	client.setPeerHostName("localhost");
-	client.setPeerPort(104);
-	client.setPeerAETitle("SHS1554382C");
+	client.setPeerPort(11112);
+	client.setPeerAETitle("STORESCP");
 	client.setAETitle("CLIENT");
 
 	if ((client.negotiateAssociation()).good()) {
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	const T_ASC_PresentationContextID presID = client.findPresentationContextID(UID_VerificationSOPClass, UID_LittleEndianExplicitTransferSyntax);
+	T_ASC_PresentationContextID presID = client.findPresentationContextID(UID_VerificationSOPClass, UID_LittleEndianExplicitTransferSyntax, ASC_SC_ROLE_DEFAULT);
 	OFCondition echoTest = client.sendECHORequest(presID);
 
 	if (echoTest.good()) {
@@ -81,57 +81,8 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-
-	const T_ASC_PresentationContextID presIDXRay = client.findPresentationContextID(UID_XRayAngiographicImageStorage, UID_LittleEndianExplicitTransferSyntax);
-	DcmFileFormat fileformat;
-	OFCondition loadStatus = fileformat.loadFile(argv[1]);
-	if (loadStatus.good()) {
-		std::cout << "File loaded successfully!" << std::endl;
-	}
-	else {
-		std::cerr << "Failed to load file: " << loadStatus.text() << std::endl;
-		return -1;
-	}
-	DcmDataset* dataset = fileformat.getDataset();
-	Uint16 response;
-	OFCondition storeTest = client.sendSTORERequest(presIDXRay, argv[1], dataset, response);
-
-	if (storeTest.good()) {
-		std::cout << "C-STORE request successful! Response code: " << response << std::endl;
-	}
-	else {
-		std::cerr << "C-STORE request failed: " << storeTest.text() << std::endl;
-		return -1;
-	}
-
-
-	/*
-	DcmDataset* qDataset = new DcmDataset;
-	qDataset->putAndInsertString(DCM_QueryRetrieveLevel, "STUDY");
-	qDataset->putAndInsertString(DCM_PatientName, "*");
-	qDataset->putAndInsertString(DCM_PatientID, "");
-
-	
-	OFCondition stat = client.addPresentationContext(UID_FINDPatientRootQueryRetrieveInformationModel, { UID_LittleEndianExplicitTransferSyntax }, ASC_SC_ROLE_DEFAULT);
-	if (stat.good()) {
-		std::cout << "Find Patient Root Query Retrieve Information Model added." << std::endl;
-	}
-	else { std::cout << "Find Patient Root Query Retrieve Information Model failed." << std::endl; }
-	client.negotiateAssociation();
-	
-	const T_ASC_PresentationContextID presIDFind = client.findPresentationContextID(UID_FINDPatientRootQueryRetrieveInformationModel, UID_LittleEndianExplicitTransferSyntax);
-	
-	status = client.sendFINDRequest(presIDFind, qDataset, NULL);
-	if (status.good()) {
-		std::cout << "C-FIND request successful!" << std::endl;
-	}
-	else {
-		std::cerr << "C-FIND request failed: " << status.text() << std::endl;
-		return -1;
-	}
-	*/
-
-	client.closeAssociation(DCMSCU_RELEASE_ASSOCIATION);
+	// Release the associatio
+	client.releaseAssociation();
 
 	return 0;
 }
